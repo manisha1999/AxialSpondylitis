@@ -1,0 +1,185 @@
+/* .measureButtons{
+    display: flex;
+    flex-direction: row;
+    flex-basis: 50%;
+    
+} 
+p{
+    margin-left: 20px;
+}
+.mbuttons{
+    width: 250px;
+}  */
+
+/* .measurement-container {
+    width: 90%;
+    margin: 20px auto;
+    padding: 20px;
+    border: 2px solid #1976d2;
+    border-radius: 10px;
+    background-color: #F7F9FC;
+  }
+  
+  /* Flexbox container for the measurement buttons */
+  /* .measureButtons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 20px;
+  } */
+  
+  /* Individual button container */
+  /* .mbuttons {
+    background-color: transparent;
+    border: none;
+    border-radius: 8px;
+    width: 300px;
+
+    padding: 15px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    /* display: flex;
+    flex-direction: column;
+    flex-basis: 25%;
+    align-items: center;
+    justify-content: space-between;
+    
+  }  */
+  
+  /* Button styles */
+  /* .mbuttons button {
+    width: 100%;
+    background-color: #1976d2;
+    color: white;
+    padding: 10px 0;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 10px;
+   
+  } */
+  
+  /* .mbuttons button:focus {
+    outline: none;
+    box-shadow: none;
+   
+  } */
+  
+  /* .mbuttons button:hover {
+    background-color: #0056b3;
+  }
+   */
+  /* Text within button containers */
+  /* .mbuttons p {
+    margin: 10px 0 0 0;
+    color: #333;
+    font-size: 14px;
+    text-align: center;
+    
+  }
+   */
+  /* Save button styling */
+  /* .measurement-container > button {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    background-color: #1976d2;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+  
+  }
+   */
+  /* .measurement-container > button:hover {
+    background-color: #0056b3;
+  }
+  
+  .lumbar{
+    margin-left: 50px;
+  }
+  */
+
+
+
+  /* Updated css */
+  .lumbar {
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    margin: 20px auto;
+    max-width: 90%;
+  }
+  
+  h3 {
+    text-align: center;
+    color: #1976d2;
+  }
+  
+  .measureButtons {
+    display: flex;
+    flex-direction: row;
+    flex-basis: 50%;
+    gap: 30px;
+    justify-content: center;
+  }
+  
+
+  .mbuttons {
+    
+    background-color: #fff;
+    border: 0.2px solid black;
+    box-shadow: #333;
+    border-radius: 10px;
+    padding: 15px;
+    width: 100%; /* Full width for mobile screens */
+    max-width: 400px; /* Limit box size */
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    
+  }
+  
+  .mbuttons button {
+    
+    width: 80%;
+    background-color: #1976d2;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    align-content: center;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background-color 0.3s ease-in-out;
+  }
+  
+  .mbuttons button:hover {
+    background-color: #0056b3;
+  }
+  
+  .mbuttons p {
+    margin: 10px 0;
+    color: #333;
+  }
+  
+  button {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    background-color: #1976d2;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    align-items: center;
+    transition: background-color 0.3s ease-in-out;
+  }
+  
+  button:hover {
+    background-color: #0056b3;
+  }
+  

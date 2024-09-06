@@ -1,0 +1,98 @@
+/* ResultScreen.css */
+.resultScreen{
+    font-family: 'Roboto', sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+}
+
+h1 {
+    color: #333;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.Accordion {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 10px;
+}
+
+.AccordionSummary {
+    padding: 15px;
+    background-color: #eeeeee;
+    border-bottom: 1px solid #dddddd;
+}
+
+.AccordionDetails {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.AccordionSummary:hover {
+    background-color: #e0e0e0;
+}
+
+.Typography {
+    font-size: 16px;
+    line-height: 1.5;
+    color: #666;
+}
+.resultScreen {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  h1 {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  
+  .MuiAccordionSummary-content {
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .MuiAccordionDetails-root {
+    padding: 20px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+  
+  .accordionBox {
+    margin-bottom: 20px;
+  }
+  
+  .accordionBox .dataContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  
+  .dataBox {
+    background-color: #ffffff;
+    border: 0.5px solid black;
+    border-radius: 8px;
+    padding: 20px;
+    /* width: calc(50% - 20px);  */
+    width: 300px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .dataBox p {
+    margin: 5px 0;
+    font-size: 16px;
+    color: #333;
+  }
+  
+  .dataBox {
+    font-size: 18px;
+    color: black;
+  }
+  
