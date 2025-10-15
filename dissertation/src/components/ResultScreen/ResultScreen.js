@@ -68,30 +68,53 @@ function ResultScreen() {
       const fetchLumbar = await fetch('http://localhost:3001/getflexions');
       const lumbarData = await fetchLumbar.json();
       setLumbarFlexions(lumbarData);
+      console.log(lumbarData)
 
       const fetchIntermalleolar = await fetch('http://localhost:3001/intermalleolardistances');
       const intermalleolarData = await fetchIntermalleolar.json();
       setIntermalleolarDistances(intermalleolarData);
 
       // Calculate BASMI scores
-      const computedScores = cervicalData.map((item, index) => {
-        const cervicalScore = getCervicalRotationScore((item.leftRotationAngle + item.rightRotationAngle) / 2);
-        const lumbarScore = getLumbarSideFlexionScore((lumbarData[index].flexionLeft + lumbarData[index].flexionRight) / 2);
-        const intermalleolarScore = getIntermalleolarDistanceScore(intermalleolarData[index].IntermalleolarDistance);
-        const overallScore = ((cervicalScore + lumbarScore + intermalleolarScore) / 3).toFixed(2);
-        return {
-          name: item.Name,
-          cervical: cervicalScore,
-          lumbar: lumbarScore,
-          intermalleolar: intermalleolarScore,
-          overall: overallScore,
-        };
-      });
-      setCervicalBasmiScores(computedScores.cervical);
-      setFlexionBasmiScores(computedScores.lumbar);
-      setintermalleolarBasmiScores(computedScores.intermalleolar);
-      setOverallBasmiScores(computedScores);
-    };
+      // Find all unique names in each array
+    const cervicalNames = new Set(cervicalData.map(item => item.Name));
+    const lumbarNames = new Set(lumbarData.map(item => item.Name));
+    const intermalleolarNames = new Set(intermalleolarData.map(item => item.Name));
+
+    // Find intersection: names present in all three
+    const commonNames = [...cervicalNames].filter(
+      name => lumbarNames.has(name) && intermalleolarNames.has(name)
+    );
+
+    // Compute scores only for common names
+    const computedScores = commonNames.map(name => {
+      const cervical = cervicalData.find(item => item.Name === name);
+      const lumbar = lumbarData.find(item => item.Name === name);
+      const intermalleolar = intermalleolarData.find(item => item.Name === name);
+
+      const cervicalScore = getCervicalRotationScore(
+        ((cervical.leftRotationAngle ?? 0) + (cervical.rightRotationAngle ?? 0)) / 2
+      );
+      const lumbarScore = getLumbarSideFlexionScore(
+        ((lumbar.flexionLeft ?? 0) + (lumbar.flexionRight ?? 0)) / 2
+      );
+      const intermalleolarScore = getIntermalleolarDistanceScore(
+        intermalleolar.IntermalleolarDistance ?? 0
+      );
+
+      const overallScore = ((cervicalScore + lumbarScore + intermalleolarScore) / 3).toFixed(2);
+
+      return {
+        name,
+        cervical: cervicalScore,
+        lumbar: lumbarScore,
+        intermalleolar: intermalleolarScore,
+        overall: overallScore,
+      };
+    });
+
+    setOverallBasmiScores(computedScores);
+  };
+    
 
     fetchData();
   }, []);

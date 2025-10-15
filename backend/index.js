@@ -9,7 +9,7 @@ const bodyParser = require("body-parser")
 
 
 // mongoose.connect("mongodb+srv://manishamehra2903:vishal@axialspondylitis.1uuy2.mongodb.net/test?retryWrites=true&w=majority")
-mongoose.connect("mongodb+srv://manishamehra2903:vishal@cluster0.znjw60g.mongodb.net/test?retryWrites=true&w=majority")
+mongoose.connect("mongodb+srv://manishamehra2903:vishal@axialspondylitis.1uuy2.mongodb.net/")
     .then(() => {
         const app = express();
         app.use(express.json());
