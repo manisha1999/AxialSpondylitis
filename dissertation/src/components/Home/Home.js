@@ -17,24 +17,48 @@ import LumbarFlexionInstruction from './LumbarFlexionInstruction';
 import IntermalleolarInstruction from './IntermalleolarInstruction';
 import './Home.css';
 
+const poseOptions = {
+  modelComplexity: 1,
+  smoothLandmarks: true,
+  enableSegmentation: true,
+  smoothSegmentation: true,
+  minDetectionConfidence: 0.5,
+  minTrackingConfidence: 0.5
+};
+
 const Home1 = () => {
   const canvasRef = useRef(null);
   const webcamRef = useRef(null);
+
+  // Group UI state into one object for clarity
+  const [uiState, setUiState] = useState({
+    webcamEnabled: false,
+    uploadedImageButton: false,
+    activeComponent: null,
+    showCervicalInstructions: false,
+    showLumbarFlexionInstructions: false,
+    showIntermalleolarInstructions: false
+  });
+
   const [patientName, setPatientName] = useState('');
   const [image, setImage] = useState(null);
   const [poseLandmarker, setPoseLandmarker] = useState(null);
   const [results, setResults] = useState(null);
   const [uploadedImage, setUploadedImage] = useState(null);
-  const [webcamEnabled, setWebcamEnabled] = useState(false);
-  const [uploadedImageButton, setUploadedImageButton] = useState(false);
-  const [activeComponent, setActiveComponent] = useState(null);
-  const [showCervicalInstructions, setShowCervicalInstructions] = useState(false);
-  const [showLumbarFlexionInstructions, setShowLumbarFlexionInstructions] = useState(false);
-  const [showIntermalleolarInstructions, setShowIntermalleolarInstructions] = useState(false);
 
-  const handleNameChange = (event) => {
-    setPatientName(event.target.value); // Update the state with the input value
+  // Consolidated handler for toggling UI sections and instructions
+  const setActiveSection = (section) => {
+    setUiState({
+      webcamEnabled: false,
+      uploadedImageButton: false,
+      activeComponent: section,
+      showCervicalInstructions: false,
+      showLumbarFlexionInstructions: false,
+      showIntermalleolarInstructions: false
+    });
   };
+
+  const handleNameChange = (event) => setPatientName(event.target.value);
 
   const detectPoseLandmarks = useCallback(
     async (imageSrc) => {
@@ -42,8 +66,7 @@ const Home1 = () => {
         console.log("Pose Landmarker is not loaded yet.");
         return;
       }
-
-      const imageElement = new Image();
+      const imageElement = new window.Image();
       imageElement.src = imageSrc;
       imageElement.onload = async () => {
         await poseLandmarker.send({ image: imageElement });
@@ -57,42 +80,27 @@ const Home1 = () => {
       const imageSrc = webcamRef.current.getScreenshot();
       setImage(imageSrc);
       detectPoseLandmarks(imageSrc);
-      setWebcamEnabled(false); 
+      setUiState((prev) => ({ ...prev, webcamEnabled: false }));
     }
-  }, [webcamRef, detectPoseLandmarks]);
+  }, [detectPoseLandmarks]);
 
   useEffect(() => {
     const loadPoseLandmarker = async () => {
       const pose = new Pose({
-        locateFile: (file) => {
-          return `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`;
-        }
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
       });
-
-      pose.setOptions({
-        modelComplexity: 1,
-        smoothLandmarks: true,
-        enableSegmentation: true,
-        smoothSegmentation: true,
-        minDetectionConfidence: 0.5,
-        minTrackingConfidence: 0.5
-      });
-
-      pose.onResults((results) => {
-        drawPoseLandmarks(results);
-      });
-
+      pose.setOptions(poseOptions);
+      pose.onResults(drawPoseLandmarks);
       setPoseLandmarker(pose);
     };
-
     loadPoseLandmarker();
+    // eslint-disable-next-line
   }, []);
 
   const drawPoseLandmarks = (results) => {
     setResults(results);
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
-
     if (webcamRef.current && webcamRef.current.video) {
       canvas.width = webcamRef.current.video.videoWidth;
       canvas.height = webcamRef.current.video.videoHeight;
@@ -102,10 +110,8 @@ const Home1 = () => {
     } else {
       return;
     }
-
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
-
     if (results.poseLandmarks) {
       drawConnectors(ctx, results.poseLandmarks, POSE_CONNECTIONS, {
         color: '#00FF00',
@@ -127,103 +133,50 @@ const Home1 = () => {
     }
   };
 
-  const handleEnableWebcam = () => {
-    setWebcamEnabled(true);
-    setUploadedImageButton(false);
+  // Unified handlers for enabling webcam or upload
+  const handleWebcamToggle = (enable) => {
+    setUiState((prev) => ({
+      ...prev,
+      webcamEnabled: enable,
+      uploadedImageButton: !enable
+    }));
   };
 
-  const handleDisableWebcam = () => {
-    setWebcamEnabled(false);
+  // Instruction modal handlers
+  const handleInstruction = (type) => {
+    setUiState((prev) => ({
+      ...prev,
+      showCervicalInstructions: type === "cervical",
+      showLumbarFlexionInstructions: type === "lumbar",
+      showIntermalleolarInstructions: type === "intermalleolar"
+    }));
   };
 
-  const handleUploadedImageButton = () => {
-    setUploadedImageButton(true);
-    setWebcamEnabled(false);
-  };
-
-  const handleCervicalRotation = () => {
-    setActiveComponent(activeComponent === 'CervicalRotation' ? null : 'CervicalRotation');
-    setWebcamEnabled(false);
-    setUploadedImageButton(false);
-    setShowCervicalInstructions(false);
-    setShowLumbarFlexionInstructions(false);
-    setShowIntermalleolarInstructions(false);
-  };
-  const handleIntermalleolarDistance = () => {
-    setActiveComponent(activeComponent === 'IntermalleolarDistance' ? null : 'IntermalleolarDistance');
-    setWebcamEnabled(false);
-    setUploadedImageButton(false);
-    setShowCervicalInstructions(false);
-    setShowLumbarFlexionInstructions(false);
-    setShowIntermalleolarInstructions(false);
-  };
-  const handleLumbarFlexion = () => {
-    setActiveComponent(activeComponent === 'LumbarFlexion' ? null : 'LumbarFlexion');
-    setWebcamEnabled(false);
-    setUploadedImageButton(false);
-    setShowCervicalInstructions(false);
-    setShowLumbarFlexionInstructions(false);
-    setShowIntermalleolarInstructions(false);
-  };
-
-  // New function to handle recapture
+  // Recapture logic
   const handleRecapture = () => {
     setImage(null);
     setResults(null);
-    setWebcamEnabled(true);
+    setUiState((prev) => ({ ...prev, webcamEnabled: true }));
     capture();
   };
 
-  const clearImage = () => {
-    setImage(null);
-  };
-
-  const handleCervicalInstruction = () => {
-    setShowCervicalInstructions(true);
-    setShowLumbarFlexionInstructions(false);
-    setShowIntermalleolarInstructions(false);
-  };
-
-  const handleLumbarFlexionInstruction = () => {
-    setShowCervicalInstructions(false);
-    setShowLumbarFlexionInstructions(true);
-    setShowIntermalleolarInstructions(false);
-  };
-
-  const handleIntermalleolarInstruction = () => {
-    setShowCervicalInstructions(false);
-    setShowLumbarFlexionInstructions(false);
-    setShowIntermalleolarInstructions(true);
-  };
+  const clearImage = () => setImage(null);
 
   const saveImage = () => {
     if (!image) return;
-
-    // Create an image element to hold the captured image
-    const img = new Image();
+    const img = new window.Image();
     img.src = image;
 
     img.onload = () => {
-      // Create a temporary canvas to draw the image onto
       const tempCanvas = document.createElement('canvas');
       const tempCtx = tempCanvas.getContext('2d');
-
-      // Set canvas size to match the image size
       tempCanvas.width = img.width;
       tempCanvas.height = img.height;
-
-      // Draw the image onto the temporary canvas
       tempCtx.drawImage(img, 0, 0);
-
-      // Get the data URL of the canvas content (image without landmarks)
       const imageDataUrl = tempCanvas.toDataURL('image/jpeg');
-
-      // Create a link element to trigger the download
       const link = document.createElement('a');
       link.href = imageDataUrl;
-      link.download = 'captured_image.jpg'; // Name of the saved file
-
-      // Programmatically trigger a click on the link to download the image
+      link.download = 'captured_image.jpg';
       link.click();
     };
   };
@@ -238,21 +191,21 @@ const Home1 = () => {
             type="text" 
             placeholder="Name" 
             value={patientName} 
-            onChange={handleNameChange}  // Capture the input value
+            onChange={handleNameChange}
           />
         </div>
         <div className='measurements'>
-          <button onClick={handleCervicalRotation}>Cervical Rotation</button>
-          <button onClick={handleLumbarFlexion}>Lumbar Side Flexion</button>
-          <button onClick={handleIntermalleolarDistance}>Intermalleolar Distance</button>
+          <button onClick={() => setActiveSection('CervicalRotation')}>Cervical Rotation</button>
+          <button onClick={() => setActiveSection('LumbarFlexion')}>Lumbar Side Flexion</button>
+          <button onClick={() => setActiveSection('IntermalleolarDistance')}>Intermalleolar Distance</button>
         </div>
-        {!webcamEnabled && !uploadedImageButton && (
+        {!uiState.webcamEnabled && !uiState.uploadedImageButton && (
           <div>
-            <button onClick={handleEnableWebcam}>Enable Webcam</button>
-            <button onClick={handleUploadedImageButton}>Upload Image</button>
+            <button onClick={() => handleWebcamToggle(true)}>Enable Webcam</button>
+            <button onClick={() => handleWebcamToggle(false)}>Upload Image</button>
           </div>
         )}
-        {webcamEnabled && (
+        {uiState.webcamEnabled && (
           <>
             <Webcam
               ref={webcamRef}
@@ -260,24 +213,19 @@ const Home1 = () => {
               style={{ width: '100%', height: '480px' }}
             />
             <div className='cameraButtons' style={{ display: 'flex' }}>
-              <div>
-                <button onClick={capture}>Capture Photo</button>
-              </div>
-              <div>
-                <button onClick={handleDisableWebcam}>Disable Webcam</button>
-              </div>
+              <button onClick={capture}>Capture Photo</button>
+              <button onClick={() => handleWebcamToggle(false)}>Disable Webcam</button>
             </div>
           </>
         )}
-        {uploadedImageButton && (
+        {uiState.uploadedImageButton && (
           <>
             <input type="file" accept="image/*" onChange={handleImageUpload} />
             {uploadedImage && (
               <div>
                 <img src={uploadedImage} alt="uploaded" style={{ display: 'none' }} />
                 <canvas ref={canvasRef} style={{ width: '640px', height: '480px' }} />
-                <button onClick={handleEnableWebcam}>Enable Webcam</button>
-                {/* <button onClick={clearImage}>clearImage</button> */}
+                <button onClick={() => handleWebcamToggle(true)}>Enable Webcam</button>
               </div>
             )}
           </>
@@ -293,7 +241,7 @@ const Home1 = () => {
             </div>
           </div>
         )}
-        {activeComponent === 'CervicalRotation' && (
+        {uiState.activeComponent === 'CervicalRotation' && (
           <div>
             <div className='imagesData'>
               <div className='iPoses'>
@@ -306,14 +254,13 @@ const Home1 = () => {
               </div>
             </div>
             <div className='instruction'>
-            <button className='instruction' onClick={handleCervicalInstruction}>See Instructions</button>
+              <button className='instruction' onClick={() => handleInstruction("cervical")}>See Instructions</button>
             </div>
-            {showCervicalInstructions && <InstructionModal show={showCervicalInstructions} onClose={() => setShowCervicalInstructions(false)} />}
+            {uiState.showCervicalInstructions && <InstructionModal show={uiState.showCervicalInstructions} onClose={() => handleInstruction("")} />}
             <CervicalRotation patientName={patientName} results={results} />
           </div>
         )}
-
-        {activeComponent === 'IntermalleolarDistance' && (
+        {uiState.activeComponent === 'IntermalleolarDistance' && (
           <div>
             <div className='imagesData'>
               <div>
@@ -322,14 +269,13 @@ const Home1 = () => {
               </div>
             </div>
             <div className='instruction'>
-            <button className='instruction' onClick={handleIntermalleolarInstruction}>See Instructions</button>
+              <button className='instruction' onClick={() => handleInstruction("intermalleolar")}>See Instructions</button>
             </div>
-            {showIntermalleolarInstructions && <IntermalleolarInstruction show={showIntermalleolarInstructions} onClose={() => setShowIntermalleolarInstructions(false)} />}
+            {uiState.showIntermalleolarInstructions && <IntermalleolarInstruction show={uiState.showIntermalleolarInstructions} onClose={() => handleInstruction("")} />}
             <IntermalleolarDistance patientName={patientName} results={results} />
           </div>
         )}
-
-        {activeComponent === 'LumbarFlexion' && (
+        {uiState.activeComponent === 'LumbarFlexion' && (
           <div>
             <div className='imagesData'>
               <div className='iPoses'>
@@ -346,16 +292,16 @@ const Home1 = () => {
               </div>
             </div>
             <div className='instruction'>
-            <button className='instruction' onClick={handleLumbarFlexionInstruction}>See Instructions</button>
+              <button className='instruction' onClick={() => handleInstruction("lumbar")}>See Instructions</button>
             </div>
-            {showLumbarFlexionInstructions && <LumbarFlexionInstruction show={showLumbarFlexionInstructions} onClose={() => setShowLumbarFlexionInstructions(false)} />}
+            {uiState.showLumbarFlexionInstructions && <LumbarFlexionInstruction show={uiState.showLumbarFlexionInstructions} onClose={() => handleInstruction("")} />}
             <LumbarFlexion patientName={patientName} results={results} />
           </div>
         )}
       </div>
       <footer>
         <p>@ BASMI Detection</p>
-       </footer>
+      </footer>
     </>
   );
 };

@@ -1,29 +1,25 @@
-/* Reset margin and padding */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* Set the height of the HTML and body to 100% */
 html, body {
   height: 100%;
   display: flex;
   flex-direction: column;
 }
 
-/* Ensure the main content takes up all available space above the footer */
 .main {
-  flex-grow: 1; /* Main content will expand only if there is content */
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
   padding: 20px;
-  min-height: calc(100vh - 120px); /* Ensures space for footer */
+  min-height: calc(100vh - 120px);
 }
 
-/* Footer styles */
 footer {
   width: 100%;
   text-align: center;
@@ -35,20 +31,9 @@ footer {
   position: relative;
   bottom: 0;
   left: 0;
+  margin-top: auto;
 }
 
-/* Ensure the footer stays at the bottom of the page and no extra space */
-body {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh; /* Ensures the body takes up the full height of the viewport */
-}
-
-footer {
-  margin-top: auto; /* Pushes the footer to the bottom of the page */
-}
-
-/* Content styles */
 .measurements {
   display: flex;
   justify-content: space-around;
@@ -119,7 +104,6 @@ img {
   justify-content: center;
 }
 
-/* Modal CSS */
 .modal-backdrop {
   position: fixed;
   top: 0;
@@ -142,8 +126,6 @@ img {
   max-width: 500px;
 }
 
-/* input text css */
-/* Style for the div container */
 .Name{
   margin: 20px;
   padding: 10px;
@@ -152,32 +134,29 @@ img {
   flex-direction: column;
   justify-content: center;
   align-items: flex-start;
-  background-color: #f9f9f9; /* Light background color */
+  background-color: #f9f9f9;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Adds a subtle shadow */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Style for the h3 heading */
 h3 {
   font-size: 18px;
   margin-bottom: 10px;
-  color: #333; /* Darker text for readability */
+  color: #333;
 }
 
-/* Style for the input field */
 input[type="text"] {
   width: 100%;
   padding: 10px;
   font-size: 16px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1); /* Inner shadow for depth */
-  transition: border-color 0.3s ease; /* Smooth transition for border */
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: border-color 0.3s ease;
 }
 
-/* Style for input focus */
 input[type="text"]:focus {
-  border-color: #1976d2; /* Blue border on focus */
-  outline: none; /* Removes default outline */
-  box-shadow: 0 0 5px rgba(25, 118, 210, 0.5); /* Blue glow on focus */
+  border-color: #1976d2;
+  outline: none;
+  box-shadow: 0 0 5px rgba(25, 118, 210, 0.5);
 }

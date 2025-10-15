@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Navbar from '../Navbar/Navbar';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
@@ -11,13 +11,10 @@ function ResultScreen() {
   const [cervicalRotations, setCervicalRotations] = useState([]);
   const [lumbarFlexions, setLumbarFlexions] = useState([]);
   const [intermalleolarDistances, setIntermalleolarDistances] = useState([]);
-
-  const [cervicalbasmiScores, setCervicalBasmiScores] = useState([]);
-  const [flexionbasmiScores, setFlexionBasmiScores] = useState([]);
-  const [intermalleolarbasmiScores, setintermalleolarBasmiScores] = useState([]);
   const [overallBasmiScores, setOverallBasmiScores] = useState([]);
 
-  function getCervicalRotationScore(angle) {
+  // BASMI scoring utilities
+  const getCervicalRotationScore = (angle) => {
     if (angle >= 85) return 0;
     if (angle >= 76.6) return 1;
     if (angle >= 68.1) return 2;
@@ -29,9 +26,9 @@ function ResultScreen() {
     if (angle >= 17.1) return 8;
     if (angle >= 8.6) return 9;
     return 10;
-  }
+  };
 
-  function getLumbarSideFlexionScore(flexion) {
+  const getLumbarSideFlexionScore = (flexion) => {
     if (flexion >= 20) return 0;
     if (flexion >= 18) return 1;
     if (flexion >= 15.9) return 2;
@@ -43,9 +40,9 @@ function ResultScreen() {
     if (flexion >= 3.3) return 8;
     if (flexion >= 1.2) return 9;
     return 10;
-  }
+  };
 
-  function getIntermalleolarDistanceScore(distance) {
+  const getIntermalleolarDistanceScore = (distance) => {
     if (distance >= 120) return 0;
     if (distance >= 110) return 1;
     if (distance >= 100) return 2;
@@ -57,75 +54,76 @@ function ResultScreen() {
     if (distance >= 40) return 8;
     if (distance >= 30) return 9;
     return 10;
-  }
+  };
 
+  // Data fetching
   useEffect(() => {
     const fetchData = async () => {
-      const fetchCervical = await fetch('http://localhost:3001/getcervicalrotation');
-      const cervicalData = await fetchCervical.json();
+      const cervicalRes = await fetch('http://localhost:3001/getcervicalrotation');
+      const cervicalData = await cervicalRes.json();
       setCervicalRotations(cervicalData);
 
-      const fetchLumbar = await fetch('http://localhost:3001/getflexions');
-      const lumbarData = await fetchLumbar.json();
+      const lumbarRes = await fetch('http://localhost:3001/getflexions');
+      const lumbarData = await lumbarRes.json();
       setLumbarFlexions(lumbarData);
-      console.log(lumbarData)
 
-      const fetchIntermalleolar = await fetch('http://localhost:3001/intermalleolardistances');
-      const intermalleolarData = await fetchIntermalleolar.json();
+      const intermalleolarRes = await fetch('http://localhost:3001/intermalleolardistances');
+      const intermalleolarData = await intermalleolarRes.json();
       setIntermalleolarDistances(intermalleolarData);
+    };
+    fetchData();
+  }, []);
 
-      // Calculate BASMI scores
-      // Find all unique names in each array
-    const cervicalNames = new Set(cervicalData.map(item => item.Name));
-    const lumbarNames = new Set(lumbarData.map(item => item.Name));
-    const intermalleolarNames = new Set(intermalleolarData.map(item => item.Name));
+  // Compute BASMI scores only where Name is common to all three datasets
+  const computedBasmiScores = useMemo(() => {
+    if (!cervicalRotations.length || !lumbarFlexions.length || !intermalleolarDistances.length) {
+      return [];
+    }
+    const cervicalNames = new Set(cervicalRotations.map(item => item.Name));
+    const lumbarNames = new Set(lumbarFlexions.map(item => item.Name));
+    const intermalleolarNames = new Set(intermalleolarDistances.map(item => item.Name));
 
-    // Find intersection: names present in all three
     const commonNames = [...cervicalNames].filter(
       name => lumbarNames.has(name) && intermalleolarNames.has(name)
     );
 
-    // Compute scores only for common names
-    const computedScores = commonNames.map(name => {
-      const cervical = cervicalData.find(item => item.Name === name);
-      const lumbar = lumbarData.find(item => item.Name === name);
-      const intermalleolar = intermalleolarData.find(item => item.Name === name);
+    return commonNames.map(name => {
+      const cervical = cervicalRotations.find(item => item.Name === name);
+      const lumbar = lumbarFlexions.find(item => item.Name === name);
+      const intermalleolar = intermalleolarDistances.find(item => item.Name === name);
 
       const cervicalScore = getCervicalRotationScore(
-        ((cervical.leftRotationAngle ?? 0) + (cervical.rightRotationAngle ?? 0)) / 2
+        ((cervical?.leftRotationAngle ?? 0) + (cervical?.rightRotationAngle ?? 0)) / 2
       );
       const lumbarScore = getLumbarSideFlexionScore(
-        ((lumbar.flexionLeft ?? 0) + (lumbar.flexionRight ?? 0)) / 2
+        ((lumbar?.flexionLeft ?? 0) + (lumbar?.flexionRight ?? 0)) / 2
       );
       const intermalleolarScore = getIntermalleolarDistanceScore(
-        intermalleolar.IntermalleolarDistance ?? 0
+        intermalleolar?.IntermalleolarDistance ?? 0
       );
-
-      const overallScore = ((cervicalScore + lumbarScore + intermalleolarScore) / 3).toFixed(2);
-
+      const overallBasmiScores = ((cervicalScore + lumbarScore + intermalleolarScore) / 3).toFixed(2);
       return {
         name,
         cervical: cervicalScore,
         lumbar: lumbarScore,
         intermalleolar: intermalleolarScore,
-        overall: overallScore,
+        overallBasmiScores: overallBasmiScores,
       };
     });
+  }, [cervicalRotations, lumbarFlexions, intermalleolarDistances]);
 
-    setOverallBasmiScores(computedScores);
-  };
-    
-
-    fetchData();
-  }, []);
-
+  // Keep scores in state for future extensibility (optional, or remove if unused)
+  useEffect(() => {
+    setOverallBasmiScores(computedBasmiScores);
+  }, [computedBasmiScores]);
+  
   return (
     <div>
       <Navbar />
       <div className='resultScreen'>
         <h1>Measurement Results</h1>
         <Accordion>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1-content" id="panel1-header">
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography>Cervical Rotation Results</Typography>
           </AccordionSummary>
           <AccordionDetails>
@@ -138,7 +136,7 @@ function ResultScreen() {
         </Accordion>
 
         <Accordion>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel2-content" id="panel2-header">
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography>Lumbar Flexion Results</Typography>
           </AccordionSummary>
           <AccordionDetails>
@@ -151,7 +149,7 @@ function ResultScreen() {
         </Accordion>
 
         <Accordion>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel3-content" id="panel3-header">
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography>Intermalleolar Distance Results</Typography>
           </AccordionSummary>
           <AccordionDetails>
@@ -164,23 +162,23 @@ function ResultScreen() {
         </Accordion>
 
         <Accordion>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel4-content" id="panel4-header">
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography>Overall BASMI Results</Typography>
           </AccordionSummary>
           <AccordionDetails>
             <div className="accordionBox">
-            <div className="dataContainer">
-              {overallBasmiScores.map((score, index) => (
-                <div key={index} className="dataBox">
-                  <p><strong>Name:</strong> {score.name}</p>
-                  <p><strong>Cervical Score:</strong> {score.cervical}</p>
-                  <p><strong>Lumbar Score:</strong> {score.lumbar}</p>
-                  <p><strong>Intermalleolar Score:</strong> {score.intermalleolar}</p>
-                  <p><strong>Overall BASMI Score:</strong> {score.overall}</p>
-                </div>
-              ))}
+              <div className="dataContainer">
+                {computedBasmiScores.map((score, index) => (
+                  <div key={index} className="dataBox">
+                    <p><strong>Name:</strong> {score.name}</p>
+                    <p><strong>Cervical Score:</strong> {score.cervical}</p>
+                    <p><strong>Lumbar Score:</strong> {score.lumbar}</p>
+                    <p><strong>Intermalleolar Score:</strong> {score.intermalleolar}</p>
+                    <p><strong>Overall BASMI Score:</strong> {score.overallBasmiScores}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-    </div>
           </AccordionDetails>
         </Accordion>
       </div>
